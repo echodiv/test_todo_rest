@@ -1,6 +1,7 @@
 ## RESTful API system (тестовое задание из сети)
 
-Суть задачи: создать API system для простого персонального менеджера задач.
+### Задача
+Создать API system для простого персонального менеджера задач.
 
 Система должна:
 
@@ -23,3 +24,19 @@
 Все возвращаемые результаты должны быть в формате JSON
 Регистрации/авторизации быть не должно. Система должна быть ориентирована на одного (текущего) пользователя. 
 Для реализации можно использовать любые доступные решения (вроде фреймворков) или написать собственное решение.
+
+### Реализация
+
+Go 1.17.5
+https://github.com/gorilla/mux
+https://github.com/golang-migrate/migrate/
+
+#### Использование
+1. sudo docker-compose up -d
+2. migrate -database 'postgres://localhost/dev?sslmode=disable&user=admin&password=secret12345' -path ./migrations up
+
+#### Создание миграций
+```
+# Автоматическое выставление порядкового номера
+migrate create -dir migrations -seq -digits 6 -ext sql migrate_name
+```
