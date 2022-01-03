@@ -13,10 +13,8 @@ type tagWithTasks struct {
 
 // Create new tag by name
 func (r *TagsRepository) Create(tag *models.Tag) (*models.Tag, error) {
-	if err := r.store.db.QueryRow(
-		"INSERT INTO tags (name) VALUES ($1) RETURNING id",
-		tag.Name,
-	).Scan(&tag.Id); err != nil {
+	r.store.logger.Debugf("SQL srcipt: \"%v\" with param: \"%v\"", INSERT_NEW_TAG, tag.Name)
+	if err := r.store.db.QueryRow(INSERT_NEW_TAG, tag.Name).Scan(&tag.Id); err != nil {
 		return nil, err
 	}
 	return tag, nil
@@ -26,35 +24,17 @@ func (r *TagsRepository) Create(tag *models.Tag) (*models.Tag, error) {
 func (r *TagsRepository) FindById(id int) (*tagWithTasks, error) {
 
 	tag := new(tagWithTasks)
-
-	if err := r.store.db.QueryRow(
-		"SELECT id, tag_name, created FROM tags t where id=$1", id,
-	).Scan(
+	r.store.logger.Debugf("SQL srcipt: \"%v\" with param: \"%v\"", SELECT_TAGS_BY_ID, id)
+	if err := r.store.db.QueryRow(SELECT_TAGS_BY_ID, id).Scan(
 		&tag.Id,
 		&tag.Name,
 		&tag.Created,
 	); err != nil {
 		return nil, err
 	}
-	rows, err := r.store.db.Query(
-		"SELECT id, task_name, task_description, created from tasks where tag_id=$1", id,
-	)
+	listOfTasks, err := r.store.Task().GetAllTaskByTag(id)
 	if err != nil {
 		return nil, err
-	}
-	listOfTasks := make([]models.Task, 0)
-	for rows.Next() {
-		task := models.Task{}
-		if err := rows.Scan(
-			&task.Id,
-			&task.Name,
-			&task.Description,
-			&task.Created,
-		); err != nil {
-			return nil, err
-		}
-		task.TagId = id
-		listOfTasks = append(listOfTasks, task)
 	}
 	tag.Tasks = &listOfTasks
 	return tag, nil
@@ -62,7 +42,8 @@ func (r *TagsRepository) FindById(id int) (*tagWithTasks, error) {
 
 // Get all tags
 func (r *TagsRepository) GetAllTags() ([]models.Tag, error) {
-	rows, err := r.store.db.Query("SELECT id, tag_name, created FROM tags")
+	r.store.logger.Debugf("SQL srcipt: \"%v\" ", SELECT_ALL_TAGS)
+	rows, err := r.store.db.Query(SELECT_ALL_TAGS)
 	if err != nil {
 		return nil, err
 	}

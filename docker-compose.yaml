@@ -2,6 +2,7 @@ version: '3.7'
 services:
   db:
     image: postgres:12.0-alpine
+    command: ["postgres", "-c", "log_statement=all"]
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     ports:

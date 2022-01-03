@@ -20,10 +20,11 @@ type Server struct {
 }
 
 func NewServer() *Server {
+	logger := logrus.New()
 	return &Server{
 		router: mux.NewRouter(),
-		logger: logrus.New(),
-		store:  store.New(CONF_DB_ADDRESS),
+		logger: logger,
+		store:  store.New(CONF_DB_ADDRESS, logger),
 	}
 }
 
